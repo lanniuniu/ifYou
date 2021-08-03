@@ -6,7 +6,7 @@
     <style>
         /*
         css线性渐变、background-size
-            linear-gradient chrome以正x轴为0deg 其他以正y 顺时针旋转
+            linear-gradient 正y为0 顺时针旋转
                 （如果某个色标的位置值比整个列表中在它之前的色标的位置值都要小，则该色标的
                 位置值会被设置为它前面所有色标位置值的最大值）
         css重复线性渐变 repeating-linear-gradient 色标是无限循环重复的，直到填满整个背景
@@ -51,6 +51,7 @@
         div:nth-child(3) p{
             background: linear-gradient(45deg,#fb3 25%,#58a 0,#58a 50%,#fb3 0,
             #fb3 75%,#58a 0);
+            /* 颜色后面的0 意思是 和上一个一样的数字 */
             /*
             根据勾股定理来计算条纹最小宽度
              */
