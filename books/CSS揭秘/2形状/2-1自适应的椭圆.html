@@ -5,7 +5,11 @@
     <title>自适应的椭圆</title>
     <style>
         /*
+        对border-radius的灵活运用
         背景知识：border-radius 可以单独指定水平和垂直半径 用/分隔,不仅可以设置数值还可以设置百分比
+        垂直直径用百分比 相对于盒模型的高  水平直径用百分比 相对于盒模型的长
+        / 前面所有的都是水平 后面所有都是垂直
+
          */
         div{
             width: 10rem;
@@ -30,14 +34,14 @@
             border-radius: 100% 0 0 100% / 50%;/*沿横轴剪的椭圆*/
         }
         div:nth-child(3) {
-            border-radius: 50%/100% 100% 0 0; /* 沿纵轴剪的椭圆 */
+            border-radius: 50% / 100% 100% 0 0; /* 沿纵轴剪的椭圆 */
         }
 
         /*
         自适应4分之一椭圆
          */
         div:nth-child(4){
-            border-radius: 100% 0 0 0/ 100% 0 0 0;
+            border-radius: 100% 0 0 0 / 100% 0 0 0;
         }
     </style>
 </head>
