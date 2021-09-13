@@ -6,6 +6,7 @@
     <style>
         /*
         隐藏checkbox，用伪元素来代替，配合label来扩大点击区域
+        clip已废弃 故使用clip-path 设置对区域的显示
          */
         input[type="checkbox"]:nth-child(1) + label::before{
             content: '\a0';/*  不换行空格 */
@@ -24,7 +25,7 @@
         }
         input[type="checkbox"]:nth-child(1){
             position: absolute;
-            clip: rect(0,0,0,0);
+            clip-path: polygon(0 0, 0 0, 0 0, 0 0);
         }
         input[type="checkbox"]:nth-child(1):focus + label::before{
             box-shadow: 0 0 0.1rem 0.1rem #58a;
@@ -36,7 +37,7 @@
          */
         #qinQin{
             position: absolute;
-            clip: rect(0,0,0,0);
+            clip-path: polygon(0 0, 0 0, 0 0, 0 0);
         }
         #qinQin + label{
             display: inline-block;
