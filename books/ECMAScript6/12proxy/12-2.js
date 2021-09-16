@@ -55,9 +55,108 @@ let arr = createArray('a', 'b', 'c');
 console.log(arr[-1]);
 console.log('-------------');
 
-//以下是各种方法用于拦截或代理
+/* 
+    reduce
+    reduce() 方法对数组中的每个元素执行一个由您提供的reducer函数(升序执行)，将其结果汇总为单个返回值。参数有两个 一个为reducer 一个为初始值
+    reducer 函数接收4个参数:
+        Accumulator (acc) (累计器) 累计器累计回调的返回值; 它是上一次调用回调时返回的累积值
+        Current Value (cur) (当前值) 数组中正在处理的元素。
+        Current Index (idx) (当前索引)
+        Source Array (src) (源数组)
+*/
+var pipe = function (value) {
+    var funcStack = [];
+    var oproxy = new Proxy({} , {
+      get : function (pipeObject, fnName) {
+        if (fnName === 'get') {
+          return funcStack.reduce(function (val, fn) {
+            return fn(val);
+          }, value);
+        }
+        funcStack.push(window[fnName]);
+        return oproxy;
+      }
+    });
+  
+    return oproxy;
+  }
+  
+  var double = n => n * 2;
+  var pow    = n => n * n;
+  var reverseInt = n => n.toString().split("").reverse().join("") | 0;
+  
+  pipe(3).double.pow.reverseInt.get;
 
-//set()   拦截某个属性的赋值操作。
+/*
+如果一个属性不可配置（configurable）且不可写（writable），则 Proxy 不能修改该属性，否则通过 Proxy 对象访问该属性会报错。
+*/
+const target = Object.defineProperties({}, {
+    foo: {
+      value: 123,
+      writable: false,
+      configurable: false
+    },
+});
+  
+const handler = {
+get(target, propKey) {
+    return 'abc';
+}
+};
+
+const proxy = new Proxy(target, handler);
+
+proxy.foo
+
+//set方法用来拦截某个属性的赋值操作，可以接受四个参数，依次为目标对象、属性名、属性值和 Proxy 实例本身，其中最后一个参数可选。
+let validator = {
+    set: function(obj, prop, value) {
+      if (prop === 'age') {
+        if (!Number.isInteger(value)) {
+          throw new TypeError('The age is not an integer');
+        }
+        if (value > 200) {
+          throw new RangeError('The age seems invalid');
+        }
+      }
+  
+      // 对于满足条件的 age 属性以及其他属性，直接保存
+      obj[prop] = value;
+      return true;
+    }
+};
+
+let person = new Proxy({}, validator);
+
+person.age = 100;
+
+person.age // 100
+person.age = 'young' // 报错
+person.age = 300 // 报错
+
+// 防止对象的外部读写
+const handler = {
+    get (target, key) {
+      invariant(key, 'get');
+      return target[key];
+    },
+    set (target, key, value) {
+      invariant(key, 'set');
+      target[key] = value;
+      return true;
+    }
+  };
+  function invariant (key, action) {
+    if (key[0] === '_') {
+      throw new Error(`Invalid attempt to ${action} private "${key}" property`);
+    }
+  }
+  const target = {};
+  const proxy = new Proxy(target, handler);
+  proxy._prop
+  // Error: Invalid attempt to get private "_prop" property
+  proxy._prop = 'c'
+  // Error: Invalid attempt to set private "_prop" property
 
 //apply() 拦截函数的调用、call和apply操作。
 

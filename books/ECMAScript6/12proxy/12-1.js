@@ -25,7 +25,14 @@ let proxy2 = new Proxy(target,handler);
 proxy2.a = 'A';
 console.log(target);
 
-//Proxy 实例也可以作为其他对象的原型对象。也可以同样被拦截
+// 将 Proxy 对象，设置到object.proxy属性，从而可以在object对象上调用。
+let proxy3 = {
+    proxy: new Proxy(target, handler)
+}
+
+// Proxy 实例也可以作为其他对象的原型对象。Object.create() 可以把参数当成__proto__创建对象
+let obj = Object.create(proxy3) 
+
 //支持的拦截操作
 //1）get(target, propKey, receiver)
 //
