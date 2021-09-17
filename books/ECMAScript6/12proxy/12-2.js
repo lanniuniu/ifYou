@@ -159,33 +159,215 @@ const handler = {
   // Error: Invalid attempt to set private "_prop" property
 
 //apply() 拦截函数的调用、call和apply操作。
+// apply方法可以接受三个参数，分别是目标对象、目标对象的上下文对象（this）和目标对象的参数数组。
+
+var target = function () { return 'I am the target'; };
+var handler = {
+  apply: function () {
+    return 'I am the proxy';
+  }
+};
+
+var p = new Proxy(target, handler);
+
+p() // "I am the proxy"
+
+// Reflect.apply 也会被拦截
+var twice = {
+  apply (target, ctx, args) {
+    return Reflect.apply(...arguments) * 2;
+  }
+};
+function sum (left, right) {
+  return left + right;
+};
+var proxy = new Proxy(sum, twice);
+proxy(1, 2) // 6
+proxy.call(null, 5, 6) // 22
+proxy.apply(null, [7, 8]) // 30
+Reflect.apply(proxy, null, [9, 10]) // 38
+
 
 //has()
 // has方法用来拦截HasProperty操作，即判断对象是否具有某个属性时，这个方法会生效。典型的操作就是in运算符。
+// has()方法可以接受两个参数，分别是目标对象、需查询的属性名。
+var handler = {
+  has (target, key) {
+    if (key[0] === '_') {
+      return false;
+    }
+    return key in target;
+  }
+};
+var target = { _prop: 'foo', prop: 'foo' };
+var proxy = new Proxy(target, handler);
+'_prop' in proxy // false
 
-//construct()  拦截new命令
+// has方法用来拦截HasProperty操作 而不是HasOwnProperty操作，即has()方法不判断一个属性是对象自身的属性，还是继承的属性。
+// 如果原对象不可配置或者禁止扩展，这时has()拦截会报错。
+var obj = { a: 10 };
+Object.preventExtensions(obj);
 
-//deleteProperty() 拦截delete操作，如果这个方法抛出错误或者返回false，当前属性就无法被delete命令删除。
+var p = new Proxy(obj, {
+  has: function(target, prop) {
+    return false;
+  }
+});
+
+'a' in p // TypeError is thrown
+
+// construct()  拦截new命令
+// construct()方法可以接受三个参数。返回的必须是个对象  拦截的必须是函数
+// target：目标对象。
+// args：构造函数的参数数组。
+// newTarget：创造实例对象时，new命令作用的构造函数（下面例子的p）。
+const p = new Proxy(function () {}, {
+  construct: function(target, args) {
+    console.log('called: ' + args.join(', '));
+    return { value: args[0] * 10 };
+  }
+});
+
+(new p(1)).value
+// "called: 1"
+// 10
+
+//deleteProperty() 拦截delete操作，如果这个方法抛出错误或者返回false，当前属性就无法被delete命令删除。同理，true可以删
+var handler = {
+  deleteProperty (target, key) {
+    invariant(key, 'delete');
+    delete target[key];
+    return true;
+  }
+};
+function invariant (key, action) {
+  if (key[0] === '_') {
+    throw new Error(`Invalid attempt to ${action} private "${key}" property`);
+  }
+}
+
+var target = { _prop: 'foo' };
+var proxy = new Proxy(target, handler);
+delete proxy._prop
+// Error: Invalid attempt to delete private "_prop" property
+
 //defineProperty方法拦截了Object.defineProperty操作。
+var handler = {
+  defineProperty (target, key, descriptor) {
+    return false;
+  }
+};
+var target = {};
+var proxy = new Proxy(target, handler);
+proxy.foo = 'bar' // 不会生效
+
 // getOwnPropertyDescriptor方法拦截Object.getOwnPropertyDescriptor，返回一个属性描述对象或者undefined。
-//getPrototypeOf方法主要用来拦截Object.getPrototypeOf()运算符，以及其他一些操作。
-//如Object.prototype.__proto__
+var handler = {
+  getOwnPropertyDescriptor (target, key) {
+    if (key[0] === '_') {
+      return;
+    }
+    return Object.getOwnPropertyDescriptor(target, key);
+  }
+};
+var target = { _foo: 'bar', baz: 'tar' };
+var proxy = new Proxy(target, handler);
+Object.getOwnPropertyDescriptor(proxy, 'wat') // 属性描述器
+// undefined
+Object.getOwnPropertyDescriptor(proxy, '_foo') // 属性描述器
+// undefined
+Object.getOwnPropertyDescriptor(proxy, 'baz') // 属性描述器
+// { value: 'tar', writable: true, enumerable: true, configurable: true } 
+
+//getPrototypeOf方法   返回值必须是对象或者null，否则报错
+// 主要用来拦截获取对象原型 如下  
+//         Object.prototype.__proto__
 //         Object.prototype.isPrototypeOf()
 //         Object.getPrototypeOf()
 //         Reflect.getPrototypeOf()
 //         instanceof
+var proto = {};
+var p = new Proxy({}, {
+  getPrototypeOf(target) {
+    return proto;
+  }
+});
+Object.getPrototypeOf(p) === proto // true
 
-//isExtensible方法拦截Object.isExtensible操作。
 
-//ownKeys方法用来拦截以下操作。
-//         Object.getOwnPropertyNames()
-//         Object.getOwnPropertySymbols()
-//         Object.keys()
+//isExtensible方法   拦截Object.isExtensible()操作。 该方法只能返回布尔值，否则返回值会被自动转为布尔值。
+var p = new Proxy({}, {
+  isExtensible: function(target) {
+    console.log("called");
+    return true;
+  }
+});
+
+Object.isExtensible(p) // Object.isExtensible() 方法判断一个对象是否是可扩展的
+// "called"
+// true
+
+//ownKeys方法用来拦截拦截对象自身属性的读取操作 如
+// Object.getOwnPropertyNames()
+// Object.getOwnPropertySymbols()
+// Object.keys()
+// for...in循环
+
+// 注意，使用Object.keys()方法时，有三类属性会被ownKeys()方法自动过滤，不会返回。
+// 目标对象上不存在的属性
+// 属性名为 Symbol 值
+// 不可遍历（enumerable）的属性
+let target = {
+  a: 1,
+  b: 2,
+  c: 3,
+  [Symbol.for('secret')]: '4',
+};
+
+Object.defineProperty(target, 'key', {
+  enumerable: false,
+  configurable: true,
+  writable: true,
+  value: 'static'
+});
+
+let handler = {
+  ownKeys(target) {
+    return ['a', 'd', Symbol.for('secret'), 'key'];
+  }
+};
+
+let proxy = new Proxy(target, handler);
+
+Object.keys(proxy)
+// ['a']
 
 // preventExtensions方法拦截Object.preventExtensions()。该方法必须返回一个布尔值，否则会被自动转为布尔值。
+// 这个方法有一个限制，只有目标对象不可扩展时（即Object.isExtensible(proxy)为false），proxy.preventExtensions才能返回true，否则会报错。
+// 为了防止出现这个问题，通常要在proxy.preventExtensions()方法里面，调用一次Object.preventExtensions()。
+var proxy = new Proxy({}, {
+  preventExtensions: function(target) {
+    console.log('called');
+    Object.preventExtensions(target);
+    return true;
+  }
+});
+
+Object.preventExtensions(proxy)
+// "called"
+// Proxy {}
 
 //setPrototypeOf方法主要用来拦截Object.setPrototypeOf方法。
-
+var handler = {
+  setPrototypeOf (target, proto) {
+    throw new Error('Changing the prototype is forbidden');
+  }
+};
+var proto = {};
+var target = function () {};
+var proxy = new Proxy(target, handler);
+Object.setPrototypeOf(proxy, proto);
+// Error: Changing the prototype is forbidden
 
 
 
