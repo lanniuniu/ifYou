@@ -5,9 +5,56 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <style></style>
+    <style>
+        .box {
+            width: 100px;
+            background: black;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .btn {
+            display: inline-block;
+            color: white;
+            text-align: left;
+        }
+    </style>
+    <style>
+        .tu {
+            display: inline-block;
+            width: 0;
+            margin-top: 10px;
+        }
+        .tu::after {
+            outline: 2px solid black;
+            content: 'love 青 love';
+        }
+    </style>
 </head>
 <body>
-    
+    <!-- 内联块的自动宽度是不会超出父容器宽度的  除非连续很长的数字和英文 或者设置了white-space: nowrap -->
+    <!-- 所以这就实现了  当文字少时居中  文字多时居左 -->
+    <div class="box">
+        <div class="btn">爱青青</div>
+    </div>
+    <div class="box">
+        <div class="btn">爱青青爱青青爱青青爱青青爱青青</div>
+    </div>
+    <div class="box">
+        <div class="btn">lqqlqqlqqlqqlqqlqqlqqlqq</div>
+    </div>
+
+
+    <!-- 宽度分为正常流宽度 和 格式化宽度
+    正常流宽度：流
+    格式化宽度：只出现在“绝对定位模型” 也就是absolute 和 fixed中  当出现了left right 等关键词
+        这时候会根据祖先第一个position不是static的来计算 -->
+
+    <!-- 内联块首选最小宽度 -->
+    <!-- 内容为中文时 一个汉字的宽度
+    内容为英文时 一个单词的宽度 -->
+
+    <div class="tu"></div>
+
+    <!-- 最大宽度是元素可以有的最大宽度 值为连续内联盒子的宽度和 -->
 </body>
 </html>
