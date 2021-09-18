@@ -307,7 +307,7 @@ Object.isExtensible(p) // Object.isExtensible() 方法判断一个对象是否�
 // "called"
 // true
 
-//ownKeys方法用来拦截拦截对象自身属性的读取操作 如
+//ownKeys方法用来拦截对象自身属性的读取操作 如
 // Object.getOwnPropertyNames()
 // Object.getOwnPropertySymbols()
 // Object.keys()
