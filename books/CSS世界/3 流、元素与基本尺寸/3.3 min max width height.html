@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* 
+            min-width/max-width 为流体而生 自适应屏幕
+        */
+
+        /* 
+            max-widtd min-width max-height min-height 会覆盖!important
+        */
+
+        .lqq {
+            width: 300px!important;
+            max-width: 200px;
+            height: 200px;
+            background: purple;
+        }
+
+        /* 
+            min-width max-width 有冲突时  会覆盖  规则是 "超越最大" 取大的
+        */
+        .lqq2 {
+            max-width: 500px;
+            min-width: 1000px;
+            width: 1000px;
+            height: 500px;
+            background: purple;
+        }
+
+        /* 
+            任意高度元素的展开收起
+            因为height：auto auto是个关键词 0到auto无法计算 无法形成过渡或动画效果
+            所以可以用max-height
+        */
+        .lqq3 {
+            width: 100px;
+        }
+
+        input[type="checkbox"] {
+            position: absolute;
+            clip: rect(0 0 0 0);
+        }
+        .check-in,
+        .check-out {
+            color: #34538b;
+            cursor: pointer;
+        }
+        .check-out {
+            display: none;
+        }
+        :checked ~ .check-out {
+            display: inline-block;
+        }
+        :checked ~ .check-in {
+            display: none;
+        }
+
+        .element {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .25s;
+        }
+        :checked ~ .element {
+            max-height: 666px;
+        }
+    </style>
+</head>
+<body>
+    <div class="lqq">
+        lqq
+    </div>
+
+    <div class="lqq2"></div>
+
+    <div class="lqq3">
+        <input id="check" type="checkbox">
+        <p>
+            个人觉得，display:table-cell最强的应用是可以任意个数列表的等宽效果。
+        </p>
+        <div class="element">
+        <p>display:table-cell其他一些应用，例如，两栏自适应布局，垂直居中效果等等都是可以通过其他技术手段模拟出来的，但是，根据列表个数自动等宽的效果，其他CSS是很难模拟的，尤其当需要兼容IE8浏览器的时候。</p>
+        </div>
+        <label for="check" class="check-in">更多↓</label>
+        <label for="check" class="check-out">收起↑</label>
+    </div>
+
+</body>
+</html>
