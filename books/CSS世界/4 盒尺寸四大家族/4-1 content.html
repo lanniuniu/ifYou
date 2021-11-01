@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .qq::after {
+            content: url('../../../static/img/cat.jpg');
+            width: 1000px;
+            height: 1000px;
+            display: inline-block;
+
+            /* 以上代码并不会有个正方形图
+            因为在css中 固有尺寸不会改变 content替换内容默认的适配方式是fill
+            设置为contain会让块把图片包含进入
+            */
+            object-fit: contain;
+            text-align: center;
+            line-height: 1000px;
+        }
+
+        .qq2 {
+            display: inline-block;
+            width: 256px; height: 192px;
+            /* 隐藏Firefox alt文字 */
+            color: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qq2:not([src]) {
+            /* 隐藏Chrome alt文字以及银色边框 */
+            visibility: hidden;
+        }
+
+        .qq2::before {
+            /* 淡蓝色占位背景 */
+            content: "";
+            position: absolute; left: 0;
+            width: 100%; height: 100%;
+            background-color: #f0f3f9;
+            visibility: visible;
+        }
+
+        /* 如果没有src img只是一个普通的内联标签
+         而不是替换标签 这样可以利用它做一个高性能的懒加载 */
+        .qq2::after {
+            /* attr会读取html标签的属性值 */
+            content: attr('alt');
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            line-height: 30px;
+            background-color: rgba(0,0,0,.5);
+            color: white;
+            font-size: 14px;
+            transform: translateY(100%);
+            /* 来点过渡动画效果 */
+            transition: transform .2s;
+            visibility: visible;
+        }
+        .qq2:hover::after {
+            transform: translateY(0);
+        }
+
+        /* 替换元素和非替换元素只相差个content属性 */
+    </style>
+</head>
+<body>
+    <div class="qq"></div>
+
+    <img alt="猫咪" class="qq2" data-src="../../../static/img/cat.jpg">
+    <p><button>设置src属性显示图片</button></p>
+
+
+    <script>
+        var eleButton = document.querySelector('button'),
+            eleImg = document.querySelector('.qq2');
+
+        if (eleButton && eleImg) {
+            var initValueButton = eleButton.innerHTML;
+            // 图片地址
+            var srcImage = eleImg.getAttribute('data-src');
+            console.log(eleImg)
+            // 移除该属性
+            eleImg.removeAttribute('data-src');
+            // 按钮点击事件
+            eleButton.addEventListener('click', function() {
+                if (this.innerHTML == initValueButton) {
+                    this.innerHTML = '移除src属性';
+                    // 图片显示
+                    eleImg.setAttribute('src', srcImage);
+                } else {
+                    this.innerHTML = initValueButton;
+                    // src属性移除
+                    eleImg.removeAttribute('src');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
