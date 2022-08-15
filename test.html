@@ -1,22 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        textarea {
+            vertical-align: top;
+            box-sizing: border-box;
+            resize: none;
+            overflow: auto;
+        }
+
+        textarea[resize] {
+            resize: both;
+        }
+
+        textarea[resize="vertical"] {
+            resize: vertical;
+        }
+
+        textarea[resize="horizontal"] {
+            resize: both;
+        }
+    </style>
 </head>
 <style>
     /* 清除浮动是为了解决因为子盒子浮动而造成的父盒子内部高度为0 的问题。 */
-    #clear::after {
+    /* #clear::after {
         content: '';
         clear: both;
         display: block;
-    }
+    } */
 </style>
+
 <body>
-    <div id="clear">
+    <!-- <div id="clear">
         <div style="height: 100px; width: 100px; float: left;"></div>
-    </div>
+    </div> -->
+
+    <textarea resize="both"></textarea>
+
+    <script>
+        /**
+ * @description  CSS resize polyfill for IE/Edge
+ * @author       zhangxinxu(.com)
+ * @document     https://www.zhangxinxu.com/wordpress/?p=8839
+ * @demo         https://www.zhangxinxu.com/study/201908/textarea-resize-polyfill-demo.php
+ * @license      MIT 鍙互鍏嶈垂浣跨敤锛屼絾浣滆€呭拰鏂囨。鍑哄闇€瑕佷繚鐣�
+ */
+        /**
+        * closest polyfill
+        */
+        if (!Element.prototype.matches) {
+            Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+        }
+
+        if (!Element.prototype.closest) {
+            Element.prototype.closest = function (s) {
+                var el = this;
+
+                do {
+                    if (el.matches(s)) return el;
+                    el = el.parentElement || el.parentNode;
+                } while (el !== null && el.nodeType === 1);
+
+                return null;
+            };
+        }
+
+        /**
+         * NodeList forEach support
+         */
+        if (window.NodeList && !NodeList.prototype.forEach) {
+            NodeList.prototype.forEach = Array.prototype.forEach;
+        }
+
+        /**
+         * resize polyfill
+         */
+        if (typeof window.getComputedStyle(document.body).resize == 'undefined' && window.HTMLTextAreaElement) {
+            HTMLTextAreaElement.prototype.setResize = function () {
+                // 鍏冪礌
+                var textarea = this;
+                var target = textarea.store && textarea.store.resize;
+                var resize = null;
+                var id = textarea.id;
+                if (!id) {
+                    id = ('r' + Math.random()).replace('0.', '');
+                    textarea.id = id;
+                }
+                var attrResize = textarea.getAttribute('resize');
+
+                if (typeof attrResize == 'string' && attrResize != 'vertical' && attrResize != 'horizontal') {
+                    attrResize = 'both';
+                }
+                if (typeof attrResize != 'string') {
+                    return;
+                }
+
+                if (!target) {
+                    target = document.createElement('span');
+                    resize = document.createElement('label');
+                    resize.setAttribute('for', id);
+                    target.appendChild(resize);
+                    // 涓€浜涘浐瀹氱殑鏍峰紡璁剧疆
+                    target.style.position = 'relative';
+                    target.style.verticalAlign = window.getComputedStyle(textarea).verticalAlign;
+
+                    resize.style.position = 'absolute';
+                    resize.style.width = '17px';
+                    resize.style.height = '17px';
+                    resize.style.background = "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cpath d='M765.558 510.004a93.65 93.65 0 1 0 191.665 0 93.65 93.65 0 1 0-191.665 0zM765.558 821.46a93.65 93.65 0 1 0 191.665 0 93.65 93.65 0 1 0-191.665 0zM422.15700000000004 821.46a93.65 93.65 0 1 0 191.665 0 93.65 93.65 0 1 0-191.665 0zM422.15700000000004 510.004a93.65 93.65 0 1 0 191.665 0 93.65 93.65 0 1 0-191.665 0zM765.558 202.54a93.65 93.65 0 1 0 191.665 0 93.65 93.65 0 1 0-191.665 0zM66.77700000000002 821.46a93.65 93.65 0 1 0 191.665 0 93.65 93.65 0 1 0-191.665 0z' fill='%23BFBFBF'/%3E%3C/svg%3E\") no-repeat center";
+                    resize.style.bottom = '0';
+                    resize.style.right = '0';
+                    resize.style.backgroundSize = '12px 12px';
+                    textarea.insertAdjacentElement('afterend', target);
+                    textarea.store = textarea.store || {};
+                    textarea.store.resize = target;
+
+                    var store = {};
+                    resize.addEventListener('mousedown', function (event) {
+                        store.resizing = true;
+                        store.startX = event.pageX;
+                        store.startY = event.pageY;
+                        // 姝ゆ椂textarea鐨勫昂瀵�
+                        store.offsetWidth = textarea.offsetWidth;
+                        store.offsetHeight = textarea.offsetHeight;
+
+                        event.preventDefault();
+                    });
+
+                    document.addEventListener('mousemove', function (event) {
+                        if (!store.resizing) {
+                            return;
+                        }
+                        event.preventDefault();
+
+                        var currentX = event.pageX;
+                        var currentY = event.pageY;
+
+                        var moveX = currentX - store.startX;
+                        var moveY = currentY - store.startY;
+
+                        var currentWidth = store.offsetWidth + moveX;
+                        var currentHeight = store.offsetHeight + moveY;
+
+                        if (currentWidth < 40) {
+                            currentWidth = 40;
+                        }
+                        if (currentHeight < 40) {
+                            currentHeight = 40;
+                        }
+
+                        // 灏哄璁剧疆
+                        if (attrResize == 'both' || attrResize == 'horizontal') {
+                            textarea.style.width = currentWidth + 'px';
+                            if (target.style.display == 'block') {
+                                target.style.width = currentWidth + 'px';
+                            }
+                        }
+                        if (attrResize == 'both' || attrResize == 'vertical') {
+                            textarea.style.height = currentHeight + 'px';
+                            if (/inline/.test(styleDisplay)) {
+                                target.style.height = currentHeight + 'px';
+                            }
+                        }
+                    });
+
+                    document.addEventListener('mouseup', function () {
+                        if (store.resizing) {
+                            store.resizing = false;
+                        }
+                    });
+                }
+
+                var styleDisplay = window.getComputedStyle(textarea).display;
+                if (styleDisplay == 'none') {
+                    target.style.display = 'none';
+                } else if (/inline/.test(styleDisplay)) {
+                    target.style.display = 'inline-block';
+                    target.style.height = textarea.offsetHeight + 'px';
+                } else {
+                    target.style.display = 'block';
+                    target.style.width = textarea.offsetWidth + 'px';
+                }
+            };
+
+            HTMLTextAreaElement.prototype.initResize = function () {
+                this.setResize();
+
+                // 鏇存柊涓庡鐞�
+                this.addEventListener('DOMAttrModified', function () {
+                    this.setResize();
+                }, false);
+            };
+
+            window.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('textarea[resize]').forEach(function (textarea) {
+                    textarea.initResize();
+                });
+
+                // 鎻掑叆鍐呭鏃跺€欑殑鑷姩鍒濆鍖�
+                document.body.addEventListener('DOMNodeInserted', function (event) {
+                    // 鎻掑叆鐨勫厓绱�
+                    var target = event.target;
+
+                    if (target.matches('textarea[resize]') && (!target.store || !target.store.resize)) {
+                        target.initResize();
+                    }
+                });
+            });
+        }
+
+
+    </script>
 </body>
+
 </html>
