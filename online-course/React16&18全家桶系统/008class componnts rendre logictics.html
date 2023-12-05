@@ -1,21 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
+    <style>
+      .container {
+        width: 100%;
+        height: 600px;
+        background-color: blue;
+      }
+
+      .left {
+        width: 200px;
+        height: 200px;
+        float: left;
+        background-color: red;
+        margin-left: -100%; /* 会让左边的盒子向上移动 */
+      }
+
+      .inner {
+        margin: 0 200px;
+      }
+
+      .center {
+        width: 100%;
+        height: 100%;
+        background-color: green;
+        float: left;
+      }
+
+      .right {
+        width: 200px;
+        height: 200px;
+        float: right;
+        background-color: yellow;
+        margin-left: -100%;
+      }
+    </style>
+  </head>
+  <body>
     <script>
-        /**
-         * 1.type: contructor function
-         * 2.setState(); async/recpmmend 
-         * forceUpdate(); sync but performance is bad; avoid to change state directly
-         * 3.hooks function: componentDidMount, shouldComponentUpdate, componentDidUpdate
-         * 4.React.StrictMode: inspect the component gramma and suggested api
-         */
+      /**
+       * 1.type: contructor function
+       * 2.setState(); async/recpmmend
+       * forceUpdate(); sync but performance is bad; avoid to change state directly
+       * 3.hooks function: componentDidMount, shouldComponentUpdate, componentDidUpdate
+       * 4.React.StrictMode: inspect the component gramma and suggested api
+       */
     </script>
-</body>
+    <div class="container">
+      <div class="center">
+        <div class="inner">center</div>
+      </div>
+      <div class="left"></div>
+      <div class="right"></div>
+    </div>
+  </body>
 </html>
-
-
